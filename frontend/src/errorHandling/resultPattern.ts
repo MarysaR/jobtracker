@@ -1,33 +1,41 @@
-export type Result<T, E extends Error> = Ok<T, E> | Err<T, E>;
-
 export class Ok<T, E> {
-  constructor(public readonly value: T) {}
+  value: T;
+  
+  constructor(value: T) {
+    this.value = value;
+  }
   
   static of<T, E>(value: T): Ok<T, E> {
     return new Ok(value);
   }
   
-  public isOk(): this is Ok<T, E> {
+  isOk(): boolean {
     return true;
   }
   
-  public isErr(): this is Err<T, E> {
+  isErr(): boolean {
     return false;
   }
 }
 
 export class Err<T, E> {
-  constructor(public readonly error: E) {}
+  error: E;
+  
+  constructor(error: E) {
+    this.error = error;
+  }
   
   static of<T, E>(error: E): Err<T, E> {
     return new Err(error);
   }
   
-  public isOk(): this is Ok<T, E> {
+  isOk(): boolean {
     return false;
   }
   
-  public isErr(): this is Err<T, E> {
+  isErr(): boolean {
     return true;
   }
 }
+
+export type Result<T, E> = Ok<T, E> | Err<T, E>;
