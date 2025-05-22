@@ -1,0 +1,5 @@
+backend/.env.prod
+backend/.env
+node_modules
+.env.prodbackend/.env.prod
+backend/.env
