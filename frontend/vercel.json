@@ -1,0 +1,4 @@
+{
+  "buildCommand": "tsc --noEmit false && vite build",
+  "outputDirectory": "dist"
+}
