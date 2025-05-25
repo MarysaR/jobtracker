@@ -7,7 +7,6 @@ const { PrismaClient } = require("@prisma/client");
 import apiRoutes from "./routes";
 import authRoutes from "./routes/auth";
 import passport from "./auth/passport";
-
 import { Request, Response, NextFunction } from "express";
 
 // Load environment variables
@@ -25,14 +24,21 @@ app.use(
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
+
+// Configuration CORS mise à jour
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://jobtracker-rosy.vercel.app",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
