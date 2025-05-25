@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 interface User {
@@ -13,10 +13,12 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = async () => {
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+  const checkAuth = useCallback(async () => {
     setLoading(true);
     const response = await axios
-      .get("http://localhost:3000/auth/user", {
+      .get(`${API_URL}/auth/user`, {
         withCredentials: true,
       })
       .catch((error) => {
@@ -30,11 +32,11 @@ export const useAuth = () => {
       setUser(null);
     }
     setLoading(false);
-  };
+  }, [API_URL]);
 
   const logout = async () => {
     await axios.post(
-      "http://localhost:3000/auth/logout",
+      `${API_URL}/auth/logout`,
       {},
       {
         withCredentials: true,
@@ -45,7 +47,7 @@ export const useAuth = () => {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   return {
     user,
