@@ -6,19 +6,18 @@ import type {
 } from "../utils/types";
 import { ApiError, Err, NetworkError, Ok, type Result } from "../errorHandling";
 
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
-// Pas besoin de handleApiError pour l'instant - on gère directement dans les méthodes
-
 export const applicationApi = {
-  // GET /api/applications
+  // GET /applications
   getAll: async (params?: {
     page?: number;
     limit?: number;
@@ -32,7 +31,7 @@ export const applicationApi = {
     return Err.of(new ApiError("Réponse vide"));
   },
 
-  // POST /api/applications
+  // POST /applications
   create: async (
     data: CreateApplicationData
   ): Promise<Result<Application, ApiError | NetworkError>> => {
@@ -43,7 +42,7 @@ export const applicationApi = {
     return Err.of(new ApiError("Échec de création"));
   },
 
-  // PUT /api/applications/:id
+  // PUT /applications/:id
   update: async (
     id: string,
     data: Partial<CreateApplicationData>
@@ -55,7 +54,7 @@ export const applicationApi = {
     return Err.of(new ApiError("Échec de modification"));
   },
 
-  // DELETE /api/applications/:id
+  // DELETE /applications/:id
   delete: async (
     id: string
   ): Promise<Result<void, ApiError | NetworkError>> => {
