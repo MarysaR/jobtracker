@@ -22,15 +22,17 @@ const AuthForm: React.FC = () => {
     confirmPassword: "",
   });
 
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:3000/auth/google";
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   const callApi = async (
     endpoint: string,
     body: unknown
   ): Promise<ApiResponse> => {
-    const response = await fetch(`http://localhost:3000${endpoint}`, {
+    const response = await fetch(`${API_URL}${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -92,7 +94,7 @@ const AuthForm: React.FC = () => {
 
     if (result.success) {
       if (authMode === "forgot") {
-        setMessage("Email de réinitialisation envoyé !");
+        setMessage("✅ Email de réinitialisation envoyé !");
       } else {
         // Redirection après login/register réussi
         window.location.reload();
