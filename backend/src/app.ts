@@ -36,6 +36,7 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 200, // Pour les navigateurs legacy
   })
 );
 
@@ -52,7 +53,7 @@ app.use(
       secure: false, // true en production avec HTTPS
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 heures
-      sameSite: "lax",
+      sameSite: "none", // Permet les cookies cross-domain
     },
   })
 );
