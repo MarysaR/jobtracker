@@ -134,12 +134,11 @@ export const resetPassword = async (
   token: string,
   newPassword: string
 ): Promise<Result<any, ValidationError | DatabaseError>> => {
-  // Trouver l'utilisateur avec le token valide
   const user = await prisma.user.findFirst({
     where: {
       resetToken: token,
       resetTokenExpiry: {
-        gt: new Date(), // Token non expiré
+        gt: new Date(),
       },
     },
   });

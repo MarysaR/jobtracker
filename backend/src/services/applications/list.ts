@@ -16,12 +16,15 @@ interface ApplicationWithPagination {
 }
 
 export const listApplicationsService = async (
-  query: any
+  query: any,
+  userId: string // AJOUTER LE USERID
 ): Promise<Result<ApplicationWithPagination, DatabaseError>> => {
   const { page = 1, limit = 10, statut, sourceReseau } = query;
 
-  // Build where clause for filters
-  const where: any = {};
+  const where: any = {
+    userId: userId,
+  };
+
   if (statut) where.statut = statut;
   if (sourceReseau) where.sourceReseau = sourceReseau;
 
@@ -43,7 +46,6 @@ export const listApplicationsService = async (
   }
 
   const totalResult = await countApplications({ where });
-
   if (totalResult.isErr()) {
     return Err.of(totalResult.error);
   }

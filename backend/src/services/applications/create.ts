@@ -10,15 +10,20 @@ import { createApplication } from "../../repositories/application.repository";
 import { Result } from "../../errorHandling";
 
 export const createApplicationService = async (
-  body: any
+  body: any,
+  userId: string
 ): Promise<Result<any, ValidationError | DatabaseError>> => {
   const validationResult = validateCreateApplication(body);
-
   if (validationResult.isErr()) {
     return validationResult;
   }
 
-  const createResult = await createApplication(validationResult.value);
+  // AJOUTER userId aux données validées
+  const dataWithUserId = {
+    ...validationResult.value,
+    userId: userId,
+  };
 
+  const createResult = await createApplication(dataWithUserId);
   return createResult;
 };

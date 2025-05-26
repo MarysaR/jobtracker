@@ -7,7 +7,6 @@ import { DatabaseError } from "../errorHandling/genericError";
 
 const prisma = new PrismaClient();
 
-// Wrapper functions avec Result pattern
 const findUserByGoogleId = async (
   googleId: string
 ): Promise<Result<any, DatabaseError>> => {
@@ -57,7 +56,6 @@ passport.use(
       const existingUserResult = await findUserByGoogleId(profile.id);
 
       if (existingUserResult.isOk() && existingUserResult.value) {
-        // Utilisateur existe déjà
         return done(null, existingUserResult.value);
       }
 

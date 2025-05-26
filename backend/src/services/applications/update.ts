@@ -11,10 +11,16 @@ import {
 
 export const updateApplicationService = async (
   id: string,
-  body: any
+  body: any,
+  userId: string
 ): Promise<Result<any, ValidationError | DatabaseError>> => {
   const existingResult = await findApplicationById(id);
   if (existingResult.isErr()) {
+    return Err.of(new DatabaseError("Application not found"));
+  }
+
+  const application = existingResult.value;
+  if (application.userId !== userId) {
     return Err.of(new DatabaseError("Application not found"));
   }
 

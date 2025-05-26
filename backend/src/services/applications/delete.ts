@@ -6,15 +6,19 @@ import {
 } from "../../repositories/application.repository";
 
 export const deleteApplicationService = async (
-  id: string
+  id: string,
+  userId: string
 ): Promise<Result<any, DatabaseError>> => {
-  // Check if application exists
   const existingResult = await findApplicationById(id);
   if (existingResult.isErr()) {
     return Err.of(new DatabaseError("Application not found"));
   }
 
-  // Delete application
+  const application = existingResult.value;
+  if (application.userId !== userId) {
+    return Err.of(new DatabaseError("Application not found"));
+  }
+
   const deleteResult = await deleteApplication(id);
   return deleteResult;
 };

@@ -50,7 +50,6 @@ router.get("/verify-token", async (req: Request, res: Response) => {
       userId: string;
     };
 
-    // Récupérer l'utilisateur depuis la DB
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
     });
