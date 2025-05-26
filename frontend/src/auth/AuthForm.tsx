@@ -14,6 +14,7 @@ const AuthForm: React.FC = () => {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -22,6 +23,7 @@ const AuthForm: React.FC = () => {
     confirmPassword: "",
   });
 
+  // URL de base pour l'API
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   const handleGoogleLogin = () => {
@@ -54,6 +56,7 @@ const AuthForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    setSuccess(false);
 
     // Validation mot de passe pour inscription
     if (
@@ -89,27 +92,49 @@ const AuthForm: React.FC = () => {
       };
     }
 
-    // Appel API
-    const result = await callApi(endpoint, body);
+    try {
+      // Appel API
+      const result = await callApi(endpoint, body);
 
-    if (result.success) {
-      if (authMode === "forgot") {
-        setMessage("Email de réinitialisation envoyé !");
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data = result.data as any;
-        if (data && data.token) {
-          // Stocker le token JWT
-          localStorage.setItem("jobtracker_token", data.token);
-          // Rediriger vers le dashboard
-          window.location.reload();
+      if (result.success) {
+        if (authMode === "forgot") {
+          setSuccess(true);
+          setMessage(
+            "✅ Email de réinitialisation envoyé ! Vérifiez votre boîte mail."
+          );
         } else {
-          setMessage("Connexion réussie mais pas de token reçu");
+          // Login/Register réussi
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const data = result.data as any;
+          if (data && data.token) {
+            // Stocker le token JWT
+            localStorage.setItem("jobtracker_token", data.token);
+
+            // Message de succès temporaire
+            setSuccess(true);
+            if (authMode === "register") {
+              setMessage("✅ Compte créé avec succès ! Redirection...");
+            } else {
+              setMessage("✅ Connexion réussie ! Redirection...");
+            }
+
+            // Attendre un peu pour que l'utilisateur voie le message
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else {
+            setMessage("❌ Connexion réussie mais pas de token reçu"); // SI PAS DE TOKEN REJET !
+          }
         }
+      } else {
+        setMessage(`❌ ${result.error}`);
       }
-    } else {
-      setMessage(`❌ ${result.error}`);
+    } catch (error) {
+      console.log("Erreur:", error);
+      setMessage("❌ Erreur de connexion au serveur");
     }
+
+    setLoading(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +152,7 @@ const AuthForm: React.FC = () => {
       confirmPassword: "",
     });
     setMessage("");
+    setSuccess(false);
   };
 
   return (
@@ -248,7 +274,8 @@ const AuthForm: React.FC = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={loading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                     />
                   </div>
                 )}
@@ -263,7 +290,8 @@ const AuthForm: React.FC = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={loading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                   />
                 </div>
 
@@ -278,7 +306,8 @@ const AuthForm: React.FC = () => {
                       value={formData.password}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={loading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                     />
                   </div>
                 )}
@@ -294,7 +323,8 @@ const AuthForm: React.FC = () => {
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={loading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                     />
                   </div>
                 )}
@@ -302,8 +332,8 @@ const AuthForm: React.FC = () => {
                 {/* Message */}
                 {message && (
                   <div
-                    className={`text-sm p-3 rounded-lg ${
-                      message.includes("✅")
+                    className={`text-sm p-3 rounded-lg font-medium ${
+                      success
                         ? "bg-green-100 text-green-700 border border-green-200"
                         : "bg-red-100 text-red-700 border border-red-200"
                     }`}
@@ -315,7 +345,7 @@ const AuthForm: React.FC = () => {
                 {/* Bouton submit */}
                 <button
                   onClick={handleEmailSubmit}
-                  disabled={loading}
+                  disabled={loading || success}
                   className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
@@ -340,7 +370,28 @@ const AuthForm: React.FC = () => {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      Chargement...
+                      {authMode === "login"
+                        ? "Connexion..."
+                        : authMode === "register"
+                        ? "Création..."
+                        : "Envoi..."}
+                    </span>
+                  ) : success ? (
+                    <span className="flex items-center justify-center">
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {authMode === "forgot"
+                        ? "Email envoyé !"
+                        : "Redirection..."}
                     </span>
                   ) : authMode === "login" ? (
                     "Se connecter"
@@ -360,7 +411,8 @@ const AuthForm: React.FC = () => {
                         setAuthMode("forgot");
                         resetForm();
                       }}
-                      className="text-sm text-blue-600 hover:text-blue-800 underline"
+                      disabled={loading || success}
+                      className="text-sm text-blue-600 hover:text-blue-800 underline disabled:opacity-50"
                     >
                       Mot de passe oublié ?
                     </button>
@@ -373,7 +425,8 @@ const AuthForm: React.FC = () => {
                         setAuthMode("login");
                         resetForm();
                       }}
-                      className="text-sm text-blue-600 hover:text-blue-800 underline"
+                      disabled={loading || success}
+                      className="text-sm text-blue-600 hover:text-blue-800 underline disabled:opacity-50"
                     >
                       ← Retour à la connexion
                     </button>
