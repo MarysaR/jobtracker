@@ -6,7 +6,9 @@ import type {
 } from "../utils/types";
 import { ApiError, Err, NetworkError, Ok, type Result } from "../errorHandling";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// Ajouter /api à la baseURL
+const API_BASE_URL =
+  (import.meta.env.VITE_API_URL || "http://localhost:3000") + "/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -16,8 +18,17 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// Intercepteur pour ajouter le token JWT automatiquement
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("jobtracker_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const applicationApi = {
-  // GET /applications
+  // GET /api/applications
   getAll: async (params?: {
     page?: number;
     limit?: number;
@@ -31,7 +42,7 @@ export const applicationApi = {
     return Err.of(new ApiError("Réponse vide"));
   },
 
-  // POST /applications
+  // POST /api/applications
   create: async (
     data: CreateApplicationData
   ): Promise<Result<Application, ApiError | NetworkError>> => {
@@ -42,7 +53,7 @@ export const applicationApi = {
     return Err.of(new ApiError("Échec de création"));
   },
 
-  // PUT /applications/:id
+  // PUT /api/applications/:id
   update: async (
     id: string,
     data: Partial<CreateApplicationData>
@@ -54,7 +65,7 @@ export const applicationApi = {
     return Err.of(new ApiError("Échec de modification"));
   },
 
-  // DELETE /applications/:id
+  // DELETE /api/applications/:id
   delete: async (
     id: string
   ): Promise<Result<void, ApiError | NetworkError>> => {
