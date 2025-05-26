@@ -94,16 +94,22 @@ const AuthForm: React.FC = () => {
 
     if (result.success) {
       if (authMode === "forgot") {
-        setMessage("✅ Email de réinitialisation envoyé !");
+        setMessage("Email de réinitialisation envoyé !");
       } else {
-        // Redirection après login/register réussi
-        window.location.reload();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data = result.data as any;
+        if (data && data.token) {
+          // Stocker le token JWT
+          localStorage.setItem("jobtracker_token", data.token);
+          // Rediriger vers le dashboard
+          window.location.reload();
+        } else {
+          setMessage("Connexion réussie mais pas de token reçu");
+        }
       }
     } else {
       setMessage(`❌ ${result.error}`);
     }
-
-    setLoading(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
