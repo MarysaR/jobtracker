@@ -50,7 +50,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // true en production avec HTTPS
+      secure: true, // OBLIGATOIRE avec sameSite: "none"
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 heures
       sameSite: "none", // Permet les cookies cross-domain
