@@ -63,7 +63,7 @@ const AuthForm: React.FC = () => {
       authMode === "register" &&
       formData.password !== formData.confirmPassword
     ) {
-      setMessage("❌ Les mots de passe ne correspondent pas");
+      setMessage("Les mots de passe ne correspondent pas");
       setLoading(false);
       return;
     }
@@ -100,7 +100,7 @@ const AuthForm: React.FC = () => {
         if (authMode === "forgot") {
           setSuccess(true);
           setMessage(
-            "✅ Email de réinitialisation envoyé ! Vérifiez votre boîte mail."
+            "Email de réinitialisation envoyé ! Vérifiez votre boîte mail."
           );
         } else {
           // Login/Register réussi
@@ -113,9 +113,9 @@ const AuthForm: React.FC = () => {
             // Message de succès temporaire
             setSuccess(true);
             if (authMode === "register") {
-              setMessage("✅ Compte créé avec succès ! Redirection...");
+              setMessage("Compte créé avec succès ! Redirection...");
             } else {
-              setMessage("✅ Connexion réussie ! Redirection...");
+              setMessage("Connexion réussie ! Redirection...");
             }
 
             // Attendre un peu pour que l'utilisateur voie le message
@@ -123,15 +123,15 @@ const AuthForm: React.FC = () => {
               window.location.reload();
             }, 1500);
           } else {
-            setMessage("❌ Connexion réussie mais pas de token reçu"); // SI PAS DE TOKEN REJET !
+            setMessage("Connexion réussie mais pas de token reçu");
           }
         }
       } else {
-        setMessage(`❌ ${result.error}`);
+        setMessage(`${result.error}`);
       }
     } catch (error) {
       console.log("Erreur:", error);
-      setMessage("❌ Erreur de connexion au serveur");
+      setMessage("Erreur de connexion au serveur");
     }
 
     setLoading(false);

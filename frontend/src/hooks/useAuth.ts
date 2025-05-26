@@ -12,7 +12,20 @@ interface User {
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [showMessage, setShowMessage] = useState(false);
+
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+  // Afficher un message temporaire
+  const showTemporaryMessage = (msg: string, duration = 3000) => {
+    setMessage(msg);
+    setShowMessage(true);
+    setTimeout(() => {
+      setShowMessage(false);
+      setMessage("");
+    }, duration);
+  };
 
   // Récupérer le token depuis localStorage
   const getToken = () => {
@@ -47,65 +60,66 @@ export const useAuth = () => {
   const checkAuth = useCallback(async () => {
     setLoading(true);
 
-    console.log("🚀 Starting checkAuth...");
-    setLoading(true);
-
     // 1. Vérifier s'il y a un token dans l'URL
     let token = checkUrlToken();
-    console.log("🔍 Token from URL:", token);
 
     // 2. Sinon, récupérer depuis localStorage
     if (!token) {
       token = getToken();
-      console.log("💾 Token from localStorage:", token);
     }
 
     // 3. Si pas de token, pas connecté
     if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
-    // 3. Si pas de token, pas connecté
-    if (!token) {
-      console.log("❌ No token found");
       setUser(null);
       setLoading(false);
       return;
     }
 
     // 4. Vérifier le token avec le backend
-    console.log("📡 Calling verify-token...");
     try {
       const response = await axios.get(`${API_URL}/auth/verify-token`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("✅ Response:", response.data);
 
       if (response.data.user) {
         setUser(response.data.user);
+        // Message de bienvenue seulement si on vient de se connecter
+        if (window.location.search.includes("token=")) {
+          showTemporaryMessage(`Bienvenue ${response.data.user.name} !`);
+        }
       } else {
         setUser(null);
         removeToken();
       }
     } catch (error) {
-      console.log("❌ Token invalid:", error);
+      console.log("Token invalid:", error);
       setUser(null);
       removeToken();
+
+      // Si le token était invalide, afficher un message
+      if (token) {
+        showTemporaryMessage("Session expirée, veuillez vous reconnecter");
+      }
     }
 
     setLoading(false);
   }, [API_URL, checkUrlToken]);
 
   const logout = async () => {
-    // Supprimer le token local
+    const wasLoggedIn = !!user;
+
+    // Supprimer le token local et l'utilisateur immédiatement
     removeToken();
     setUser(null);
 
-    // Optionnel : appeler le backend pour invalider le token
+    // Afficher message de déconnexion
+    if (wasLoggedIn) {
+      showTemporaryMessage("Déconnexion réussie ! À bientôt !");
+    }
+
+    // Optionnel : appeler le backend pour invalider le token (en arrière-plan)
     try {
       const token = getToken();
       if (token) {
@@ -121,6 +135,7 @@ export const useAuth = () => {
       }
     } catch (error) {
       console.log("Logout error:", error);
+      // Pas besoin d'afficher l'erreur à l'utilisateur, il est déjà déconnecté côté frontend
     }
   };
 
@@ -133,5 +148,7 @@ export const useAuth = () => {
     loading,
     logout,
     checkAuth,
+    message,
+    showMessage,
   };
 };
