@@ -1,14 +1,15 @@
 const express = require("express");
 import { Request, Response } from "express";
 import { HTTP_STATUS } from "../../constants/httpStatus";
+import jwt from "jsonwebtoken";
 import {
   createUserWithEmail,
   authenticateUser,
   generatePasswordResetToken,
   resetPassword,
-  findUserByEmail, // Ajout pour récupérer le nom de l'utilisateur
+  findUserByEmail,
 } from "../../services/auth/email-auth";
-import { emailService } from "../../services/email/email-service"; // Import du service email
+import { emailService } from "../../services/email/email-service";
 
 const router = express.Router();
 
@@ -24,17 +25,17 @@ router.post("/register", async (req: Request, res: Response) => {
   const result = await createUserWithEmail({ email, password, name });
 
   if (result.isOk()) {
-    // Connecter automatiquement l'utilisateur
-    req.login(result.value, (err) => {
-      if (err) {
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-          error: "Registration successful but login failed",
-        });
-      }
-      res.status(HTTP_STATUS.CREATED).json({
-        message: "User created successfully",
-        user: result.value,
-      });
+    // Créer un JWT token au lieu d'utiliser req.login
+    const token = jwt.sign(
+      { userId: result.value.id },
+      process.env.SESSION_SECRET!,
+      { expiresIn: "24h" }
+    );
+
+    res.status(HTTP_STATUS.CREATED).json({
+      message: "User created successfully",
+      user: result.value,
+      token: token,
     });
   } else {
     const statusCode =
@@ -59,17 +60,17 @@ router.post("/login", async (req: Request, res: Response) => {
   const result = await authenticateUser({ email, password });
 
   if (result.isOk()) {
-    // Connecter l'utilisateur
-    req.login(result.value, (err) => {
-      if (err) {
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-          error: "Authentication successful but login failed",
-        });
-      }
-      res.json({
-        message: "Login successful",
-        user: result.value,
-      });
+    // Créer un JWT token au lieu d'utiliser req.login
+    const token = jwt.sign(
+      { userId: result.value.id },
+      process.env.SESSION_SECRET!,
+      { expiresIn: "24h" }
+    );
+
+    res.json({
+      message: "Login successful",
+      user: result.value,
+      token: token,
     });
   } else {
     res.status(HTTP_STATUS.UNAUTHORIZED).json({
