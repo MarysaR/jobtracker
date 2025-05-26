@@ -3,7 +3,10 @@ import { useAuth } from "./hooks/useAuth";
 import AuthForm from "./auth/AuthForm";
 
 function AppContent() {
-  const { user, loading, message, showMessage } = useAuth();
+  const authState = useAuth();
+  console.log("DEBUG AppContent useAuth:", authState);
+
+  const { user, loading, message, showMessage } = authState;
 
   if (loading) {
     return (
