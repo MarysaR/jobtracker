@@ -119,9 +119,7 @@ const Dashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-red-100">
-        <div className="text-lg text-orange-800 font-medium">
-          🔄 Chargement...
-        </div>
+        <div className="text-lg text-orange-800 font-medium">Chargement...</div>
       </div>
     );
   }
@@ -130,12 +128,12 @@ const Dashboard: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-red-100">
         <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-red-500">
-          <div className="text-red-600 font-medium">❌ {error}</div>
+          <div className="text-red-600 font-medium">{error}</div>
           <button
             onClick={fetchApplications}
             className="mt-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 rounded-lg font-medium transition-all"
           >
-            🔄 Réessayer
+            Réessayer
           </button>
         </div>
       </div>
@@ -198,7 +196,7 @@ const Dashboard: React.FC = () => {
         isOpen={showDeleteModal}
         title="Supprimer la candidature"
         message={`Êtes-vous sûr de vouloir supprimer définitivement la candidature chez "${deletingApplicationName}" ? Cette action ne peut pas être annulée.`}
-        confirmText="🗑️ Supprimer"
+        confirmText="Supprimer"
         cancelText="Annuler"
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
