@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 
 interface User {
@@ -15,18 +15,39 @@ export const useAuth = () => {
   const [message, setMessage] = useState("");
   const [showMessage, setShowMessage] = useState(false);
 
+  // Ref pour éviter les timers multiples
+  const messageTimerRef = useRef<number | null>(null);
+
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-  console.log("🎯 App render - showMessage:", showMessage, "message:", message);
+  // Debug logs
+  console.log("DEBUG useAuth state:", {
+    showMessage,
+    message,
+    hasUser: !!user,
+  });
+
   // Afficher un message temporaire
-  const showTemporaryMessage = (msg: string, duration = 3000) => {
+  const showTemporaryMessage = useCallback((msg: string, duration = 3000) => {
+    console.log("DEBUG showTemporaryMessage called with:", msg);
+
+    // Nettoyer le timer précédent si existe
+    if (messageTimerRef.current) {
+      clearTimeout(messageTimerRef.current);
+    }
+
+    // Afficher le message
     setMessage(msg);
     setShowMessage(true);
-    setTimeout(() => {
+
+    // Programmer la disparition
+    messageTimerRef.current = setTimeout(() => {
+      console.log("DEBUG Message timeout - hiding message");
       setShowMessage(false);
       setMessage("");
+      messageTimerRef.current = null;
     }, duration);
-  };
+  }, []);
 
   // Récupérer le token depuis localStorage
   const getToken = () => {
@@ -47,22 +68,23 @@ export const useAuth = () => {
   const checkUrlToken = useCallback(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
-
     if (token) {
+      console.log("DEBUG Token found in URL");
       setToken(token);
       // Nettoyer l'URL
       window.history.replaceState({}, document.title, window.location.pathname);
       return token;
     }
-
     return null;
   }, []);
 
   const checkAuth = useCallback(async () => {
+    console.log("DEBUG checkAuth started");
     setLoading(true);
 
     // 1. Vérifier s'il y a un token dans l'URL
     let token = checkUrlToken();
+    const isFromUrlToken = !!token;
 
     // 2. Sinon, récupérer depuis localStorage
     if (!token) {
@@ -71,6 +93,7 @@ export const useAuth = () => {
 
     // 3. Si pas de token, pas connecté
     if (!token) {
+      console.log("DEBUG No token found");
       setUser(null);
       setLoading(false);
       return;
@@ -78,6 +101,7 @@ export const useAuth = () => {
 
     // 4. Vérifier le token avec le backend
     try {
+      console.log("DEBUG Verifying token with backend");
       const response = await axios.get(`${API_URL}/auth/verify-token`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -85,17 +109,24 @@ export const useAuth = () => {
       });
 
       if (response.data.user) {
+        console.log(
+          "DEBUG Token valid, user authenticated:",
+          response.data.user.name
+        );
         setUser(response.data.user);
-        // Message de bienvenue seulement si on vient de se connecter
-        if (window.location.search.includes("token=")) {
+
+        // Message de bienvenue seulement si on vient de se connecter via URL
+        if (isFromUrlToken) {
+          console.log("DEBUG Showing welcome message for new login");
           showTemporaryMessage(`Bienvenue ${response.data.user.name} !`);
         }
       } else {
+        console.log("DEBUG Invalid response from backend");
         setUser(null);
         removeToken();
       }
     } catch (error) {
-      console.log("Token invalid:", error);
+      console.log("DEBUG Token verification failed:", error);
       setUser(null);
       removeToken();
 
@@ -106,9 +137,10 @@ export const useAuth = () => {
     }
 
     setLoading(false);
-  }, [API_URL, checkUrlToken]);
+  }, [API_URL, checkUrlToken, showTemporaryMessage]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
+    console.log("DEBUG Logout initiated");
     const wasLoggedIn = !!user;
     const currentToken = getToken();
 
@@ -135,7 +167,16 @@ export const useAuth = () => {
     } catch (error) {
       console.log("Logout error:", error);
     }
-  };
+  }, [API_URL, user, showTemporaryMessage]);
+
+  // Nettoyage du timer au démontage
+  useEffect(() => {
+    return () => {
+      if (messageTimerRef.current) {
+        clearTimeout(messageTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     checkAuth();
@@ -148,5 +189,6 @@ export const useAuth = () => {
     checkAuth,
     message,
     showMessage,
+    showTemporaryMessage, // Exposer pour utilisation externe si besoin
   };
 };
