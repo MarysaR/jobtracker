@@ -1,6 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import axios from "axios";
-
+import type { ReactNode } from "react";
 interface User {
   id: string;
   googleId: string;
@@ -9,7 +16,23 @@ interface User {
   avatarUrl?: string;
 }
 
-export const useAuth = () => {
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  message: string;
+  showMessage: boolean;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+  showTemporaryMessage: (msg: string, duration?: number) => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -21,7 +44,7 @@ export const useAuth = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   // Debug logs
-  console.log("DEBUG useAuth state:", {
+  console.log("DEBUG AuthProvider state:", {
     showMessage,
     message,
     hasUser: !!user,
@@ -72,7 +95,7 @@ export const useAuth = () => {
       console.log("DEBUG Token found in URL");
       setToken(token);
       // Nettoyer l'URL
-      window.history.replaceState({}, document.title, window.location.pathname);
+      window.history.replaceState({}, "", window.location.pathname);
       return token;
     }
     return null;
@@ -182,13 +205,23 @@ export const useAuth = () => {
     checkAuth();
   }, [checkAuth]);
 
-  return {
+  const value: AuthContextType = {
     user,
     loading,
     logout,
     checkAuth,
     message,
     showMessage,
-    showTemporaryMessage, // Exposer pour utilisation externe si besoin
+    showTemporaryMessage,
   };
+
+  return React.createElement(AuthContext.Provider, { value }, children);
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };
