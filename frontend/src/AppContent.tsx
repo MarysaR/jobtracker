@@ -3,11 +3,7 @@ import { useAuth } from "./hooks/useAuth";
 import AuthForm from "./auth/AuthForm";
 
 function AppContent() {
-  const authState = useAuth();
-  console.log("DEBUG AppContent useAuth:", authState);
-
-  const { user, loading, message, showMessage } = authState;
-
+  const { user, loading, message, showMessage } = useAuth();
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-red-100">
@@ -16,20 +12,13 @@ function AppContent() {
     );
   }
 
-  console.log(
-    "DEBUG App render - showMessage:",
-    showMessage,
-    "message:",
-    message
-  );
-
   return (
     <>
       {/* Messages de notification */}
       {showMessage && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm min-w-[280px]">
-            <div className="text-sm font-medium text-gray-800">{message}</div>
+          <div className="bg-gradient-to-r from-orange-100 to-red-100 border border-orange-300 rounded-lg shadow-lg p-4 max-w-sm min-w-[280px]">
+            <div className="text-sm font-medium text-orange-800">{message}</div>
           </div>
         </div>
       )}

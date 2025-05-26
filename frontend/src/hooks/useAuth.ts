@@ -43,17 +43,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-  // Debug logs
-  console.log("DEBUG AuthProvider state:", {
-    showMessage,
-    message,
-    hasUser: !!user,
-  });
-
   // Afficher un message temporaire
   const showTemporaryMessage = useCallback((msg: string, duration = 3000) => {
-    console.log("DEBUG showTemporaryMessage called with:", msg);
-
     // Nettoyer le timer précédent si existe
     if (messageTimerRef.current) {
       clearTimeout(messageTimerRef.current);
@@ -65,7 +56,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Programmer la disparition
     messageTimerRef.current = setTimeout(() => {
-      console.log("DEBUG Message timeout - hiding message");
       setShowMessage(false);
       setMessage("");
       messageTimerRef.current = null;
@@ -92,7 +82,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     if (token) {
-      console.log("DEBUG Token found in URL");
       setToken(token);
       // Nettoyer l'URL
       window.history.replaceState({}, "", window.location.pathname);
@@ -102,7 +91,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const checkAuth = useCallback(async () => {
-    console.log("DEBUG checkAuth started");
     setLoading(true);
 
     // 1. Vérifier s'il y a un token dans l'URL
@@ -116,7 +104,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // 3. Si pas de token, pas connecté
     if (!token) {
-      console.log("DEBUG No token found");
       setUser(null);
       setLoading(false);
       return;
@@ -124,7 +111,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // 4. Vérifier le token avec le backend
     try {
-      console.log("DEBUG Verifying token with backend");
       const response = await axios.get(`${API_URL}/auth/verify-token`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -132,24 +118,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (response.data.user) {
-        console.log(
-          "DEBUG Token valid, user authenticated:",
-          response.data.user.name
-        );
         setUser(response.data.user);
 
         // Message de bienvenue seulement si on vient de se connecter via URL
         if (isFromUrlToken) {
-          console.log("DEBUG Showing welcome message for new login");
           showTemporaryMessage(`Bienvenue ${response.data.user.name} !`);
         }
       } else {
-        console.log("DEBUG Invalid response from backend");
         setUser(null);
         removeToken();
       }
     } catch (error) {
-      console.log("DEBUG Token verification failed:", error);
+      console.log(error);
       setUser(null);
       removeToken();
 
@@ -163,7 +143,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [API_URL, checkUrlToken, showTemporaryMessage]);
 
   const logout = useCallback(async () => {
-    console.log("DEBUG Logout initiated");
     const wasLoggedIn = !!user;
     const currentToken = getToken();
 
@@ -188,7 +167,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         );
       }
     } catch (error) {
-      console.log("Logout error:", error);
+      console.log(error);
     }
   }, [API_URL, user, showTemporaryMessage]);
 
