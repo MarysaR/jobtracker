@@ -109,8 +109,8 @@ export const useAuth = () => {
 
   const logout = async () => {
     const wasLoggedIn = !!user;
+    const currentToken = getToken();
 
-    // Supprimer le token local et l'utilisateur immédiatement
     removeToken();
     setUser(null);
 
@@ -119,23 +119,20 @@ export const useAuth = () => {
       showTemporaryMessage("Déconnexion réussie ! À bientôt !");
     }
 
-    // Optionnel : appeler le backend pour invalider le token (en arrière-plan)
     try {
-      const token = getToken();
-      if (token) {
+      if (currentToken) {
         await axios.post(
           `${API_URL}/auth/logout`,
           {},
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${currentToken}`,
             },
           }
         );
       }
     } catch (error) {
       console.log("Logout error:", error);
-      // Pas besoin d'afficher l'erreur à l'utilisateur, il est déjà déconnecté côté frontend
     }
   };
 
