@@ -12,7 +12,7 @@ function App() {
       </div>
     );
   }
-
+  console.log("🎯 App render - showMessage:", showMessage, "message:", message);
   return (
     <>
       {/* Messages de notification */}

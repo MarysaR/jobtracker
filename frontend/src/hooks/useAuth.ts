@@ -17,6 +17,7 @@ export const useAuth = () => {
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
+  console.log("🎯 App render - showMessage:", showMessage, "message:", message);
   // Afficher un message temporaire
   const showTemporaryMessage = (msg: string, duration = 3000) => {
     setMessage(msg);
